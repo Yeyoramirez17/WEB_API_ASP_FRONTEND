@@ -1,0 +1,109 @@
+@page "/Faculties/List"
+
+@using WEB_API_FRONTEND.Models
+@using WEB_API_FRONTEND.Interface
+@using WEB_API_FRONTEND.Pages.Components
+
+@inject NavigationManager Navigation
+@inject IToastService ToastService
+@inject InterfaceFaculty _interfaceFaculty
+
+<div class="container-fluid">
+    <h2>Facultades School API</h2>
+
+    <div class="row">
+        <div class="col">
+            <button type="button" class="btn btn-primary" @onclick='() => Navigation.NavigateTo("Faculty/create")'>
+                <i class="bi bi-plus-circle-fill"></i> Nuevo</button>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col">
+            <table class="table table-bordered">
+                <thead>
+                    <tr id="tableCustom">
+                        <th class="col-sm-1" scope="col">N°</th>
+                        <th class="col-sm-3" scope="col">Facultad</th>
+                        <th class="col-sm-2" scope="col">Dirección</th>
+                        <th class="col-sm-2" scope="col">Teléfono</th>
+                        <th class="col-sm-1" scope="col">Correo</th>
+                        <th class="col-sm-1"> </th>
+                        <th class="col-sm-1"> </th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    @if (listFaculties.Count == 0)
+                    {
+                        <tr>
+                            <button class="btn btn-primary" type="button" disabled>
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span class="visually-hidden">Loading...</span>
+                            </button>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in listFaculties)
+                        {
+                            <tr>
+                                <td>@item.IdFaculty</td>
+                                <td>@item.NameFaculty</td>
+                                <td>@item.Address</td>
+                                <td>@item.Phone</td>
+                                <td>@item.Email</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-block" 
+                                    @onclick="()=> CreateFaculty(item.IdFaculty)"> <i class="bi bi-eye-fill"></i>
+                                        Detalle
+                                    </button>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-block" 
+                                    @onclick="(async ()=> await ShowConfirmationModal(item.IdFaculty, item.NameFaculty))"> 
+                                    <i class="bi bi-trash3-fill">
+                                    </i> Eliminar</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    private List<Faculty> listFaculties = new List<Faculty>();
+    [CascadingParameter] IModalService Modal { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        listFaculties = await _interfaceFaculty.GetAll();
+    }
+    private void CreateFaculty(int facultyId)
+    {
+        Console.WriteLine(facultyId);
+        Navigation.NavigateTo($"/Faculty/{facultyId}");
+    }
+    private async Task ShowConfirmationModal(int Id, string NameFaculty)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add("FacultyId", Id);
+        parameters.Add("NameFaculty", NameFaculty);
+
+        Console.WriteLine("ShowConfirmationModal ID: " + Id);
+
+        var confirmationModal = Modal.Show<ConfirmationModalFaculty>("¿Eliminar Facultad?", parameters);
+        var result = await confirmationModal.Result;
+
+        if (!result.Cancelled)
+        {
+            ToastService.ShowSuccess("Se ha eliminado la Facultad", "Buen trabajo!");
+            Navigation.NavigateTo("/Faculties/List");
+        }
+
+    }
+}

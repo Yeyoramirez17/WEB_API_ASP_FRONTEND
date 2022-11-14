@@ -1,0 +1,156 @@
+@page "/Course/Create"
+@page "/Course/{IdCourse:int}"
+
+@using WEB_API_FRONTEND.Models
+@using WEB_API_FRONTEND.Models.ModelsSuport
+@using WEB_API_FRONTEND.Interface
+
+@inject InterfaceCourse _interfaceCourse
+@inject InterfaceFaculty _interfaceFaculty
+@inject NavigationManager Navigation
+@inject IToastService ToastService
+
+<div class="container-fluid d-flex justify-content-center m-0 p-0">
+    <EditForm Model="@course" OnValidSubmit="@HandleOnValidSubmit" class="col-sm-4 col-md-4 col-lg-4 p-0">
+        <DataAnnotationsValidator />
+        <div class="card">
+            <div class="card-header text-center">
+                @if (IdCourse != null)
+                {
+                    <h4>@course.NameCourse</h4>
+                    <p>Registro N° @course.IdCourse</p>
+                }
+                else
+                {
+                    <h4>Registrar Materia</h4>
+                }
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label" for="nameCourse">Materia</label>
+                    <InputText class="form-control" id="nameCourse" type="text" placeholder="Materia"
+                        @bind-Value="course.NameCourse" />
+                    <ValidationMessage For="@(() => course.NameCourse)" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="creditsCourse">Creditos</label>
+                    <InputNumber class="form-control" id="creditsCourse" type="text" placeholder="Creditos"
+                        @bind-Value="course.Credits" />
+                    <ValidationMessage For="@(() => course.Credits)" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="creditsHours">Horas</label>
+                    <InputNumber class="form-control" id="creditsHours" type="text" placeholder="Horas"
+                        @bind-Value="course.Hours" />
+                    <ValidationMessage For="@(() => course.Hours)" />
+                </div>
+                <div class="form-group">
+                    @if (IdCourse == null)
+                    {
+                        <label class="form-label" for="faculty">Facultad</label>
+                        <InputSelect class="form-select"
+                        ValueChanged='@((string nameFaculty) => HandleOnChange(nameFaculty))'
+                        ValueExpression="@(() => course.NameFaculty)">
+                            <option selected>Seleccione la facultad</option>
+                            @if (facultyList != null)
+                        {
+                            @foreach (var itemFaculty in facultyList)
+                            {
+                                <option value="@itemFaculty.NameFaculty">@itemFaculty.NameFaculty</option>
+                            }
+                        }
+                    </InputSelect>
+                    }
+                    else
+                    {
+                        <label class="form-label" for="faculty">Facultad</label>
+                        <InputSelect class="form-select"
+                        ValueChanged='@((string nameFaculty) => HandleOnChange(nameFaculty))'
+                        ValueExpression="@(() => course.NameFaculty)">
+                            @if (facultyList != null)
+                        {
+                            <option>Seleccione la facultad</option>
+                            @foreach (var itemFaculty in facultyList)
+                            {
+                                <option selected="@(course.NameFaculty == itemFaculty.NameFaculty)"
+                            value="@itemFaculty.NameFaculty">@itemFaculty.NameFaculty</option>
+                            }
+                        }
+                    </InputSelect>
+                        @if (Alert)
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show my-2" role="alert">
+                                <strong>Debe seleccionar una opción!</strong>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary" hidden="@(IdCourse != null)">
+                        <i class="bi bi-arrow-up-square"></i> Registrar</button>
+                    <button type="submit" class="btn btn-success" hidden="@(IdCourse == null)">
+                        <i class="bi bi-check-lg"></i> Guardar</button>
+                    <a href="Course/List" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Cancelar</a>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public int? IdCourse { get; set; }
+    public CourseCreateUpdate course = new CourseCreateUpdate();
+    private List<Faculty> facultyList = new List<Faculty>();
+    private bool Alert { get; set; } = false;
+    protected override async Task OnInitializedAsync()
+    {
+        facultyList = await _interfaceFaculty.GetAll();
+
+        if (IdCourse != null)
+        {
+            course = await _interfaceCourse.CourseGetById(IdCourse.Value);
+            Console.WriteLine("Facultad: " + course.NameFaculty);
+        }
+    }
+    private async Task HandleOnValidSubmit()
+    {
+        try
+        {
+            if (Validation())
+            {
+                if (IdCourse != null)
+                {
+                    await _interfaceCourse.UpdateCourse(IdCourse.Value, course);
+                    Navigation.NavigateTo("/Course/List");
+                }
+                else
+                {
+                    CourseCreateUpdate newCourse = await _interfaceCourse.CreateCourse(course);
+                    Navigation.NavigateTo("/Course/List");
+                }
+                ToastService.ShowSuccess("Se han guardado los datos correctamente", "Buen trabajo!");
+            }
+        }
+        catch (System.Exception exception)
+        {
+            Console.WriteLine(exception.Message);
+            ToastService.ShowError("Se ha presentado un error al guardar los datos", "Ops!");
+        }
+    }
+    private void HandleOnChange(string nameFaculty)
+    {
+        course.NameFaculty = nameFaculty;
+        Console.WriteLine("Nombre Facultad Seleccionada: " + course.NameFaculty);
+        Validation();
+    }
+    private bool Validation()
+    {
+        if (course.NameFaculty == "Seleccione la facultad")
+        {
+            Alert = true;
+            return false;
+        }
+        return true;
+    }
+}

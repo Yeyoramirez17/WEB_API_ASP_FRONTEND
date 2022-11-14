@@ -1,0 +1,104 @@
+@page "/Course/List"
+
+@using WEB_API_FRONTEND.Models
+@using WEB_API_FRONTEND.Interface
+@using WEB_API_FRONTEND.Pages.Components
+
+@inject InterfaceCourse _interfaceCourse
+@inject NavigationManager _navigationManager
+@inject IToastService ToastService
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <h4>School API : Materias</h4>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-10">
+            <button class="btn btn-outline-success float-start mb-4" @onclick='() => _navigationManager.NavigateTo("Course/Create")'>Agregar Cursos</button>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-10">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Curso</th>
+                        <th>Creditos</th>
+                        <th>Horass</th>
+                        <th> </th>
+                        <th> </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!courseList.Any())
+                    {
+                        <tr class="d-flex justify-content-center mx-auto p-0">
+                            <div class="container ">
+                                <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var course in courseList)
+                        {
+                            <tr>
+                                <td>@course.IdCourse</td>
+                                <td>@course.NameCourse</td>
+                                <td>@course.Credits</td>
+                                <td>@course.Hours</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-block" @onclick="() => RedirectTo(course.IdCourse)">
+                                        <i class="bi bi-eye-fill"></i>
+                                        Detalle
+                                    </button>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-block"
+                                        @onclick="( () => ShowConfirmationModal(course.IdCourse, course.NameCourse))">
+                                        <i class="bi bi-trash3-fill">
+                                        </i> Eliminar</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table> 
+        </div>
+    </div>
+
+</div>
+
+@code {
+    private List<Course> courseList = new List<Course>();
+    [CascadingParameter] IModalService Modal { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        courseList = await _interfaceCourse.GetAll();
+    }
+    private void RedirectTo(int IdCourse)
+    {
+        _navigationManager.NavigateTo($"/Course/{IdCourse}");
+    }
+    private async Task ShowConfirmationModal(int IdCourse, string NameCourse)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add("CourseId", IdCourse);
+        parameters.Add("NameCourse", NameCourse);
+
+        var confirmationModal = Modal.Show<ConfirmationModalCourse>("¿Eliminar Materia?", parameters);
+        var result = await confirmationModal.Result;
+
+        if (!result.Cancelled)
+        {
+            ToastService.ShowSuccess("Se ha eliminado el Curso", "Buen trabajo!");
+            _navigationManager.NavigateTo("/Course/List");
+            StateHasChanged();
+        }
+
+    }
+}

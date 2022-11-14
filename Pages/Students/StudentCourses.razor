@@ -1,0 +1,107 @@
+@page "/StudentAndCourses/{StudentId:int}"
+
+@using WEB_API_FRONTEND.Models
+@using WEB_API_FRONTEND.Interface
+@using WEB_API_FRONTEND.Pages.Components
+
+@inject InterfaceStudent _interfaceStudent
+
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center" style="width: 80%; margin: auto;">
+        <div class="col-8">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h5 class="card-title">Estudiante</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>Nombre Completo </th>
+                            <td>@studentCourse.LastName @studentCourse.FirstName</td>
+                        </tr>
+                        <tr>
+                            <th>Identificación</th>
+                            <td>@studentCourse.Identification</td>
+                        </tr>
+                        <tr>
+                            <th>Fecha de Nacimiento</th>
+                            <td>@studentCourse.BirthDate</td>
+                        </tr>
+                        <tr>
+                            <th>Edad</th>
+                            <td>@studentCourse.Age</td>
+                        </tr>
+                        <tr>
+                            <th>Teléfono</th>
+                            <td>@studentCourse.Phone</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>@studentCourse.Email</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-4">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h5 class="card-title">Materias</h5>
+                </div>
+                <div class="card-body">
+                    @if (studentCourse.Courses.Any())
+                    {
+                        <ul class="list-group list-group-flush list-group-numbered">
+                            @foreach (var course in studentCourse.Courses)
+                            {
+                                <li class="list-group-item">@course.NameCourse</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="text-center">
+                            <h5>No se le ha asignado materias</h5>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor"
+                            class="bi bi-exclamation-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                <path
+                                d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z" />
+                            </svg>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5" style="width: 80%; margin: auto;">
+        <div class="col">
+            <button class="btn btn-outline-success" @onclick="() => ViewCourses()"> <i class="bi bi-book"></i> Cursos </button>
+            @if(Flag == true)
+            {
+                <AddCourses studentCourse="studentCourse"></AddCourses>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int? StudentId { get; set; }
+    private StudentCourse studentCourse = new StudentCourse();
+    private bool Flag { get; set; } = false;
+    protected override async Task OnInitializedAsync()
+    {
+        if (StudentId != null)
+        {
+            studentCourse = await _interfaceStudent.GetStudentAndCoursesById(StudentId.Value);
+        }
+    }
+    private void ViewCourses()
+    {
+        Flag = true;
+    }
+
+}
