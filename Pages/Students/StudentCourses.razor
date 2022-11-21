@@ -5,6 +5,7 @@
 @using WEB_API_FRONTEND.Pages.Components
 
 @inject InterfaceStudent _interfaceStudent
+@inject NavigationManager _navigationManager
 
 <div class="container-fluid mt-4">
     <div class="row justify-content-center" style="width: 80%; margin: auto;">
@@ -78,12 +79,19 @@
     </div>
 
     <div class="row mt-5" style="width: 80%; margin: auto;">
-        <div class="col">
-            <button class="btn btn-outline-success" @onclick="() => ViewCourses()"> <i class="bi bi-book"></i> Cursos </button>
-            @if(Flag == true)
+        <div class="col mx-auto">
+            <button class="btn btn-outline-secondary"
+                @onclick='() => _navigationManager.NavigateTo("studentsList")'>
+                <i class="bi bi-arrow-left"></i> Volver
+            </button>
+            <button class="btn btn-outline-success ms-5" @onclick="() => ViewCourses()">
+                <i class="bi bi-journal-plus"></i> Cursos
+            </button>
+            @if (Flag == true)
             {
                 <AddCourses studentCourse="studentCourse"></AddCourses>
             }
+
         </div>
     </div>
 </div>

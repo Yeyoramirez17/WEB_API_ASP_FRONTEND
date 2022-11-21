@@ -74,7 +74,7 @@
 
 @code {
     private List<Course> courseList = new List<Course>();
-    [CascadingParameter] IModalService Modal { get; set; }
+    [CascadingParameter] IModalService Modal { get; set; } 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();

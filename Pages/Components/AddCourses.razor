@@ -8,19 +8,32 @@
 <div class="container border border-dark rounded m-2 p-4">
     <div class="row">
         <div class="col">
-            @foreach (var course in listCourses)
+            @for (int i = 0; i < listCourses.Count; i++)
             {
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" value="@course.NameCourse" id="checkCourse" >
-                    <label class="form-check-label" for="checkCourse">
-                        @course.NameCourse
-                    </label>
-                </div>
+                @for (int j = 0; j < studentCourse.Courses.Count; j++)
+                {
+                    @if (listCourses[i].NameCourse == studentCourse.Courses[j].NameCourse)
+                    {
+                        <div class="form-check form-check-inline">
+                            <input checked class="form-check-input" type="checkbox" value="@listCourses[i].NameCourse" id="checkCourse" />
+                            <label class="form-check-label" for="checkCourse">
+                                @studentCourse.Courses[j].NameCourse
+                            </label>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" value="@listCourses[i].NameCourse" id="checkCourse" />
+                            <label class="form-check-label" for="checkCourse">
+                                @listCourses[i].NameCourse
+                            </label>
+                        </div>
+                    }
+                }
+
             }
         </div>
-    </div>
-    <div class=" row mt-3 justify-content-center" style="margin: auto;">
-        <button class="btn btn-outline-primary" style="width: 200px;"> <i class="bi bi-plus-lg"></i> Agregar</button>
     </div>
 </div>
 

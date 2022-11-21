@@ -2,27 +2,30 @@
 
 @using WEB_API_FRONTEND.Models;
 @using WEB_API_FRONTEND.Interface
+@using Components
 
 @inject InterfaceStudent _interfaceStudent
 @inject NavigationManager NavigationManager
+@inject IToastService ToastService
+
 <PageTitle>Estudiantes</PageTitle>
 
 <div class="container">
     <h2>Listado de estudiantes</h2>
-    <a href=""> <em>Add Student</em> </a>
+    <button class="btn btn-light" @onclick="() => CreateStudent()"> <i class="bi bi-person-plus-fill"></i> Add Student</button>
     <div class="row mt-3">
         <div class="col-12">
-            <table class="table table-bordered table-hover mitabla">
+            <table class="table table-bordered table-hover text-center">
                 <thead>
                     <tr>
                         <th>N°</th>
                         <th>Nombres</th>
                         <th>Apellidos</th>
                         <th>Identificación</th>
-                        <th>Fecha de Nacimiento</th>
-                        <th>Edad</th>
                         <th>Telefono</th>
                         <th>Correo</th>
+                        <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,7 +34,7 @@
                         <tr>
                             <button class="btn btn-primary" type="button" disabled>
                                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                <span class="visually-hidden">Loading...</span> 
+                                <span class="visually-hidden">Loading...</span>
                             </button>
                         </tr>
                     }
@@ -39,15 +42,28 @@
                     {
                         @foreach (var item in listStudent)
                         {
-                            <tr @onclick="() => RedirectTo(item.IdStudent)" class="cursor-pointer">
+                            <tr>
                                 <td>@item.IdStudent</td>
                                 <td>@item.FirstName</td>
                                 <td>@item.LastName</td>
                                 <td>@item.Identification</td>
-                                <td>@item.BirthDate</td>
-                                <td>@item.Age</td>
                                 <td>@item.Phone</td>
                                 <td>@item.Email</td>
+                                <td>
+                                    <button class="btn btn-warning" @onclick="(() => RedirectTo(item.IdStudent))">
+                                        <i class="bi bi-book"></i> Materias
+                                    </button>
+                                </td>
+                                <td>
+                                    <button class="btn btn-success" @onclick="() => UpdateStudent(item.IdStudent)">
+                                        <i class="bi bi-pencil"></i> Modificar
+                                    </button>
+                                </td>
+                                <td>
+                                    <button class="btn btn-danger" @onclick="(() => ShowConfirmationModal(item.IdStudent, item.FirstName, item.LastName))">
+                                        <i class="bi bi-trash3-fill"></i> Eliminar
+                                    </button>
+                                </td>
                             </tr>
                         }
                     }
@@ -55,17 +71,46 @@
             </table>
         </div>
     </div>
+
 </div>
 
-@code { 
+@code {
     private List<Student> listStudent = new List<Student>();
+    private int IdStudent { get; set; }
+    [CascadingParameter] IModalService Modal { get; set; } 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         listStudent = await _interfaceStudent.GetAll();
     }
-
-    private void RedirectTo(int StudentId) {
+    private void RedirectTo(int StudentId)
+    {
         NavigationManager.NavigateTo($"StudentAndCourses/{StudentId}");
+    }
+    private void CreateStudent()
+    {
+        NavigationManager.NavigateTo("CreateStudent");
+    }
+    private void UpdateStudent(int IdStudent)
+    {
+        NavigationManager.NavigateTo($"EditStudent/{IdStudent}");
+    }
+    private async Task ShowConfirmationModal(int IdStudent, string FirstName, string LastName)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add("StudentId", IdStudent);
+        parameters.Add("FirstName", FirstName);
+        parameters.Add("LastName", LastName);
+
+        var confirmationModal = Modal.Show<ConfirmationModalStudent>("¿Desea eliminar este estudiante?", parameters);
+        var result = await confirmationModal.Result;
+
+        if (!result.Cancelled)
+        {
+            ToastService.ShowSuccess("Se ha eliminado el Curso", "Buen trabajo!");
+            NavigationManager.NavigateTo("/studentsList");
+            listStudent = await _interfaceStudent.GetAll();
+        }
+
     }
 }

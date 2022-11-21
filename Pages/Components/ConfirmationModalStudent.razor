@@ -1,17 +1,17 @@
-@page "/modal"
+@page "/modalStudent"
 
-@using WEB_API_FRONTEND.Interface
-@inject InterfaceCourse _interfaceCourse
+@using Interface
+@inject InterfaceStudent _interfaceStudent
 
 <div class="container text-center">
     <div class="row">
         <div class="col">
-            <h5> @NameCourse </h5>
-        </div> 
+            <h6> @FirstName @LastName </h6>
+        </div>
     </div>
     <div class="row mt-3">
         <div class="col text-center">
-            <button type="button" class="btn btn-danger mr-3" @onclick="(async () => await DeleteCourse())">
+            <button type="button" class="btn btn-danger mr-3" @onclick="(async () => await DeleteStudent())">
                 <i class="bi bi-trash"></i> Aceptar
             </button>
             <button type="button" class="btn btn-secondary mr-3"
@@ -23,13 +23,13 @@
 </div>
 
 @code {
-
     [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
-    [Parameter] public int CourseId { get; set; }
-    [Parameter] public string NameCourse { get; set; } = string.Empty;
-    private async Task DeleteCourse()
+    [Parameter] public int StudentId { get; set; }
+    [Parameter] public string FirstName { get; set; } = string.Empty;
+    [Parameter] public string LastName { get; set; } = string.Empty;
+    private async Task DeleteStudent()
     {
-        await _interfaceCourse.DeleteCourse(CourseId);
+        await _interfaceStudent.DeleteStudent(StudentId);
         await ModalInstance.CloseAsync();
     }
 }

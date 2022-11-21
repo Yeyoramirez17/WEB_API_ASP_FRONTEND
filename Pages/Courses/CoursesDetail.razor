@@ -53,7 +53,7 @@
                         ValueExpression="@(() => course.NameFaculty)">
                             <option selected>Seleccione la facultad</option>
                             @if (facultyList != null)
-                        {
+                            {
                             @foreach (var itemFaculty in facultyList)
                             {
                                 <option value="@itemFaculty.NameFaculty">@itemFaculty.NameFaculty</option>
